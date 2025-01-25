@@ -1,8 +1,6 @@
 using backend.src.Application.Models;
 using backend.src.Application.Services;
-using backend.src.Providers;
 using backend.src.Services;
-using Moq;
 using Xunit;
 
 namespace backend.tests.units;
