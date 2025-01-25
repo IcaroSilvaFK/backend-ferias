@@ -1,0 +1,24 @@
+services: 
+  sqlserver:
+    image: mcr.microsoft.com/azure-sql-edge
+    environment:
+      MSSQL_SA_PASSWORD: "docker"
+      ACCEPT_EULA: 1
+      MSQL_PID: "Developer"
+      MSSQL_DB_NAME: "api"
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./.docker:/var/opt/mssql
+      - ./init-scripts:/docker-entrypoint-initdb.d 
+  
+  # api: 
+  #   build: .
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - SPRING_DATASOURCE_URL=jdbc:sqlserver://sqlserver:1433;databaseName=api
+  #     - SPRING_DATASOURCE_USERNAME=sa
+  #     - SPRING_DATASOURCE_PASSWORD=docker
+  #   depends_on:
+  #     - sqlserver
