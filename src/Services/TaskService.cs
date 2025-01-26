@@ -1,33 +1,63 @@
 using backend.src.Application.Models;
 using backend.src.Application.Services;
+using backend.src.Database;
 using backend.src.Dtos;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.src.Services;
 
-public class TaskService : ITaskServiceInterface
-{
-    public Task Delete(Guid id)
+public class TaskService(Persistence persistence): ITaskServiceInterface
+{   
+    private readonly Persistence _persistence = persistence;
+    public async Task<TaskModel> ChangeStatus(Guid id, Guid userId)
     {
-        throw new NotImplementedException();
+      var task = await _persistence.Tasks.FirstOrDefaultAsync(x => x.Id.Equals(id) && x.UserId.Equals(userId)) ?? throw new Exception("Task not found");
+
+      task.ChangeCompleted();
+
+      await _persistence.SaveChangesAsync();
+
+      return task;
     }
 
-    public Task<List<TaskModel>> FindAll(Guid userId)
+    public async Task Delete(Guid id)
     {
-        throw new NotImplementedException();
+        var task = await _persistence.Tasks.FirstOrDefaultAsync(x => x.Id.Equals(id)) ?? throw new Exception("Task not found");
+
+        _persistence.Tasks.Remove(task);
     }
 
-    public Task<TaskModel> FindById(Guid id)
+    public async Task<List<TaskModel>> FindAll(Guid userId)
     {
-        throw new NotImplementedException();
+        var tasks = await _persistence.Tasks.Where(x => x.UserId.Equals(userId)).ToListAsync();
+
+        return tasks;
     }
 
-    public Task<TaskDTO> Store(TaskDTO task)
+    public async Task<TaskModel> FindById(Guid id)
     {
-        throw new NotImplementedException();
+        var task = await _persistence.Tasks.FirstOrDefaultAsync(x => x.Id.Equals(id)) ?? throw new Exception("Task not found");
+
+        return task;
+    }
+
+    public async Task<TaskModel> Store(TaskDTO task, Guid userId)
+    {
+        var taskModel = new TaskModel(task.Title, task.Description, userId);
+
+        _persistence.Tasks.Add(taskModel);
+        await _persistence.SaveChangesAsync();
+
+        return taskModel;
     }
 
     public Task Update(Guid id, TaskDTO task)
     {
-        throw new NotImplementedException();
+        var taskToUpdate = _persistence.Tasks.First(x => x.Id.Equals(id)) ?? throw new Exception("Task not found");
+        taskToUpdate.ChangeTile(task.Title);
+        taskToUpdate.ChangeDescription(task.Description);
+
+        _persistence.Tasks.Update(taskToUpdate);
+        return _persistence.SaveChangesAsync();
     }
 }

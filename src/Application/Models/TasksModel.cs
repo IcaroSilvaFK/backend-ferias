@@ -1,27 +1,31 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using backend.src.Providers;
 
 namespace backend.src.Application.Models;
-  public class TaskModel
+
+[Table("tasks")]
+public class TaskModel(string name, string description, Guid userId)
+{
+  public Guid Id { get; init; } = GuidProvider.NewGuid();
+  public string Name { get; private set; } = name;
+  public string Description { get; private set; } = description;
+  public bool Completed { get; private set; } = false;
+  public DateTime? CompletedAt { get; private set; }
+  public Guid UserId { get; private set; } = userId;
+
+  public void ChangeCompleted()
   {
-    public Guid Id { get; init; }
-    public string Name { get; private set; }
-    public string Description { get; private set; }
-    public bool Completed { get; private set; } 
-    public DateTime? CompletedAt { get; private set; }
-    public Guid UserId { get; private set; }
-
-    public TaskModel(string name, string description, Guid userId) 
-    {
-      Id = GuidProvider.NewGuid();
-      Name = name;
-      Description = description;
-      Completed = false;
-      UserId = userId;
-    }
-
-
-    public void ChangeCompleted(){
-      Completed = !Completed;
-      CompletedAt = Completed ?  DateTime.UtcNow : null;
-    }
+    Completed = !Completed;
+    CompletedAt = Completed ? DateTime.UtcNow : null;
   }
+
+  public void ChangeDescription(string newDescription)
+  {
+    Description = newDescription;
+  }
+
+  public void ChangeTile(string title)
+  {
+    Name = title;
+  }
+}
