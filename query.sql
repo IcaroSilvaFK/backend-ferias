@@ -1,0 +1,15 @@
+CREATE TABLE users (
+    Id TEXT PRIMARY KEY NOT NULL,
+    Name TEXT NOT NULL,
+    Email TEXT NOT NULL UNIQUE,
+    Password TEXT NOT NULL
+);
+CREATE TABLE tasks (
+    Id TEXT PRIMARY KEY NOT NULL,
+    Title TEXT NOT NULL,
+    Description TEXT NOT NULL,
+    Status TEXT NOT NULL,
+    EndDate TEXT NOT NULL,
+    UserId TEXT NOT NULL,
+    FOREIGN KEY (UserId) REFERENCES users(Id) ON DELETE CASCADE
+);

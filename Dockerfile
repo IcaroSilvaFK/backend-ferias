@@ -10,6 +10,7 @@ RUN dotnet publish -c Release -o /app/out
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 
+RUN apt-get update && apt-get install -y sqlite3 libsqlite3-dev
 WORKDIR /app
 COPY --from=build /app/out ./
 EXPOSE 8080
