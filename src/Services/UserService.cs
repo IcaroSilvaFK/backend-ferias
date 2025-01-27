@@ -7,82 +7,111 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.src.Services;
 
 public class UserService(Persistence persistence) : IUserServiceInterface
-{   
-    private readonly Persistence _persistence = persistence;
+{
+  private readonly Persistence _persistence = persistence;
 
-    public async Task Delete(Guid id)
+  public async Task Delete(Guid id)
+  {
+    try
     {
-      try{
-        var user = await _persistence.Users.FirstOrDefaultAsync(x => x.Id.Equals(id)) ?? throw new Exception("User not found");
+      var user = await _persistence.Users.FirstOrDefaultAsync(x => x.Id.Equals(id)) ?? throw new BadHttpRequestException("User not found");
 
-        _persistence.Users.Remove(user);
+      _persistence.Users.Remove(user);
 
-        await _persistence.SaveChangesAsync();
-      }catch (Exception e){
-        throw new Exception(e.Message);
-      }
+      await _persistence.SaveChangesAsync();
     }
-
-    public async Task<UserModel> FindByEmail(string email)
+    catch (BadHttpRequestException)
     {
-      try
+      throw;
+    }
+    catch (Exception e)
+    {
+      throw new Exception(e.Message);
+    }
+  }
+
+  public async Task<UserModel?> FindByEmail(string email)
+  {
+    try
+    {
+      var user = await _persistence.Users.FirstOrDefaultAsync(x => x.Email.Equals(email));
+
+      return user;
+    }
+    catch (BadHttpRequestException)
+    {
+      throw;
+    }
+    catch (Exception e)
+    {
+      throw new Exception(e.Message);
+    }
+  }
+
+  public async Task<UserModel> FindById(Guid id)
+  {
+    try
+    {
+      var user = await _persistence.Users.FirstOrDefaultAsync(x => x.Id.Equals(id))
+        ?? throw new BadHttpRequestException("User not found");
+
+      return user;
+    }
+    catch (BadHttpRequestException)
+    {
+      throw;
+    }
+    catch (Exception e)
+    {
+      throw new Exception("An unexpected error occurred: " + e.Message, e);
+    }
+  }
+
+  public async Task<UserModel> Store(UserDTO user)
+  {
+    try
+    {
+      var existsUser = await FindByEmail(user.Email!);
+
+      if (existsUser != null)
       {
-        var user =await _persistence.Users.FirstOrDefaultAsync(x => x.Email.Equals(email)) ?? throw new Exception("User not found");
+        throw new BadHttpRequestException("User Exists already" + user.Email);
+      }
 
-        return user;
-      }
-      catch(Exception e) 
-      { 
-        throw new Exception(e.Message);
-      }
+      var newUser = new UserModel(user.Username, user.Email!, user.Password!);
+      newUser.HashPassword();
+      _persistence.Users.Add(newUser);
+      await _persistence.SaveChangesAsync();
+
+      return newUser;
     }
-
-    public async Task<UserModel> FindById(Guid id)
+    catch (BadHttpRequestException)
     {
-        try
-        {
-          var user =await _persistence.Users.FirstAsync(x => x.Id.Equals(id)) ?? throw new Exception("User not found");
-
-          return user;
-        }
-        catch(Exception e)
-        {
-          throw new Exception(e.Message);
-        }
+      throw;
     }
-
-    public async Task<UserModel> Store(UserDTO user)
+    catch (Exception e)
     {
-      try
-      { 
-        var newUser = new UserModel(user.Username, user.Email, user.Password);
-        newUser.HashPassword();
-        _persistence.Users.Add(newUser);
-        await _persistence.SaveChangesAsync();
-
-        return newUser;
-      } 
-      catch (Exception e) 
-      {
-        throw new Exception(e.Message);
-      }
+      throw new Exception(e.Message);
     }
+  }
 
-    public async Task Update(Guid id, UserDTO user)
+  public async Task Update(Guid id, UserDTO user)
+  {
+    try
     {
-      try
-      {
-        var userToUpdate = _persistence.Users.First(x => x.Id.Equals(id)) ?? throw new Exception("User not found");
-        userToUpdate.Name = user.Username;
-        userToUpdate.Email = user.Email;
-        userToUpdate.Password = user.Password;
+      var userToUpdate = _persistence.Users.First(x => x.Id.Equals(id)) ?? throw new BadHttpRequestException("User not found");
+      userToUpdate.Name = user.Username;
 
-        _persistence.Users.Update(userToUpdate);
-        await _persistence.SaveChangesAsync();
-      }
-      catch (Exception e)
-      {
-        throw new Exception(e.Message);
-      }
+      _persistence.Users.Update(userToUpdate);
+      await _persistence.SaveChangesAsync();
     }
+    catch (BadHttpRequestException)
+    {
+      throw;
+    }
+    catch (Exception e)
+    {
+      throw new Exception(e.Message);
+    }
+  }
 }

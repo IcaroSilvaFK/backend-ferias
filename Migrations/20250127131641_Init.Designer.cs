@@ -11,8 +11,8 @@ using backend.src.Database;
 namespace backend.Migrations
 {
     [DbContext(typeof(Persistence))]
-    [Migration("20250125211346_Initial")]
-    partial class Initial
+    [Migration("20250127131641_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,17 +26,18 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("Completed")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Name")
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -45,7 +46,9 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tasks");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("tasks");
                 });
 
             modelBuilder.Entity("backend.src.Application.Models.UserModel", b =>
@@ -68,7 +71,26 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("users");
+                });
+
+            modelBuilder.Entity("backend.src.Application.Models.TaskModel", b =>
+                {
+                    b.HasOne("backend.src.Application.Models.UserModel", "User")
+                        .WithMany("Tasks")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.src.Application.Models.UserModel", b =>
+                {
+                    b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618
         }

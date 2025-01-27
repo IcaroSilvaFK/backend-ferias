@@ -22,16 +22,21 @@ public class AuthController(IAuthServiceInterface authService, IUserServiceInter
     {
       var result = await _userService.FindByEmail(data.Email);
 
-      if(!result.VerifyPassword(data.Password)) 
+      Console.WriteLine(result);
+      if (result == null)
       {
         return BadRequest("Invalid credentials");
-      } 
+      }
+      if (!result.VerifyPassword(data.Password))
+      {
+        return BadRequest("Invalid credentials");
+      }
 
       var token = _authService.GenerateToken(result);
 
-      return Ok(LoginView.ToHttp(token,result));
+      return Ok(LoginView.ToHttp(token, result));
     }
-    catch(Exception er)
+    catch (Exception er)
     {
       return BadRequest(er.Message);
     }
@@ -42,11 +47,11 @@ public class AuthController(IAuthServiceInterface authService, IUserServiceInter
   public async Task<IActionResult> Refresh()
   {
     try
-    { 
+    {
       var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
 
-      if(userId == null) 
+      if (userId == null)
       {
         return BadRequest("Invalid token");
       }
@@ -54,10 +59,10 @@ public class AuthController(IAuthServiceInterface authService, IUserServiceInter
       var user = await _userService.FindById(new Guid(userId));
 
       var token = _authService.GenerateToken(user);
-      
+
       return Ok(LoginView.ToHttp(token, null));
     }
-    catch(Exception er)
+    catch (Exception er)
     {
       return BadRequest(er.Message);
     }

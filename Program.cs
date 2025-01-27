@@ -1,14 +1,28 @@
 using backend.src.Database;
 using backend.src.Application.Services;
 using backend.src.Services;
-using backend.src.Providers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
+using FluentValidation;
+using backend.src.Dtos;
+using backend.src.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "AllowAll", Policy =>
+    {
+        Policy.AllowAnyHeader();
+        Policy.AllowAnyMethod();
+        Policy.AllowAnyOrigin();
+    });
+});
+builder.Services.AddScoped<IValidator<UserDTO>, UserDTOValidator>();
+builder.Services.AddScoped<IValidator<TaskDTO>, TaskDTOValidator>();
 builder.Services.AddDbContext<Persistence>(options => options.UseSqlite("DataSource=backend.db; Cache=Shared"));
 builder.Services.AddTransient<ITaskServiceInterface, TaskService>();
 builder.Services.AddTransient<IAuthServiceInterface, AuthService>();
@@ -36,16 +50,13 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseCors("AllowAll");
+
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseHttpsRedirection();
 app.MapControllers();
-// app.();
 
 app.Run();
 
