@@ -1,0 +1,50 @@
+# Backend
+<p>
+  Observações:  
+    Como o prazo foi curto para desenvolver o app, não consegui executar mais teste unitários nem de integração nem os e2e.
+    O sistema de login ficou o mais simples possível támbem.
+</p>
+<p>
+  Da para evoluir o projeto (com um prazo maior), adicionar refresh token, subir um sqlserver.
+</p>
+## Versão do dotnet
+- 8.0.405
+
+### Para rodar o projeto
+
+```sh
+  docker compose up -d
+```
+
+## Para subir o banco de dados 
+```sh
+  # Primeiro entre no container
+  docker exec -it <container> bash
+
+  # Depois entre no banco
+  sqlite3 backend.db
+  # copie e cole o sql do query.sql
+  ```sql
+    CREATE TABLE users (
+    Id TEXT PRIMARY KEY NOT NULL,
+    Name TEXT NOT NULL,
+    Email TEXT NOT NULL UNIQUE,
+    Password TEXT NOT NULL
+    );
+    CREATE TABLE tasks (
+        Id TEXT PRIMARY KEY NOT NULL,
+        Title TEXT NOT NULL,
+        Description TEXT NOT NULL,
+        Status TEXT NOT NULL,
+        EndDate TEXT NOT NULL,
+        UserId TEXT NOT NULL,
+        FOREIGN KEY (UserId) REFERENCES users(Id) ON DELETE CASCADE
+    );
+  ```
+```
+
+### Verificar se o projeto esta rodando
+
+```sh
+  curl http://localhost:9999/swagger/index.html
+```
