@@ -6,7 +6,6 @@ COPY *.csproj ./
 RUN dotnet restore
 
 COPY . ./
-
 RUN dotnet publish -c Release -o /app/out
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
@@ -14,4 +13,4 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 COPY --from=build /app/out ./
 EXPOSE 8080
-ENTRYPOINT [ "dotnet", "/app/backend.dll" ]
+ENTRYPOINT ["dotnet", "/app/backend.dll"]
